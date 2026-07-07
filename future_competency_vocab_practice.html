@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미래 핵심 역량 어휘 연습</title>
+<style>
+  :root{
+    --indigo:#2F3E5C;
+    --indigo-dark:#20293D;
+    --gold:#D9A441;
+    --linen:#F1EEE6;
+    --card:#FFFFFF;
+    --ink:#25293A;
+    --muted:#6B7080;
+    --good:#4C8B5B;
+    --bad:#C4574A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--linen);
+    font-family:'Noto Sans KR','Pretendard',system-ui,sans-serif;
+    color:var(--ink);
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:960px;margin:0 auto;}
+
+  header{
+    background:var(--indigo);
+    color:#fff;
+    border-radius:18px;
+    padding:28px 28px 22px;
+    position:relative;
+    overflow:hidden;
+    margin-bottom:24px;
+  }
+  header::before{
+    content:"";
+    position:absolute; top:18px; left:18px;
+    width:14px; height:14px; border-radius:50%;
+    background:var(--linen);
+    box-shadow: inset 0 0 0 3px var(--indigo-dark);
+  }
+  header h1{margin:0 0 6px 40px; font-size:1.5rem; letter-spacing:.02em;}
+  header p{margin:0 0 0 40px; color:#D8DCE8; font-size:.9rem;}
+  header .tag-line{margin-top:16px; height:0; border-top:2px dashed rgba(255,255,255,.35);}
+
+  nav.tabs{display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;}
+  nav.tabs button{
+    flex:1 1 auto; min-width:150px; padding:12px 10px;
+    border:2px solid var(--indigo); background:var(--card); color:var(--indigo);
+    border-radius:12px; font-weight:700; font-size:.88rem; cursor:pointer; font-family:inherit;
+  }
+  nav.tabs button.active{background:var(--indigo); color:#fff;}
+
+  section.panel{display:none;}
+  section.panel.active{display:block;}
+
+  .card{background:var(--card); border-radius:16px; padding:22px; margin-bottom:18px; box-shadow:0 1px 3px rgba(0,0,0,.06);}
+  .card h2{margin:0 0 4px; font-size:1.15rem; color:var(--indigo-dark);}
+  .card .sub{color:var(--muted); font-size:.88rem; margin-bottom:16px;}
+
+  .match-toolbar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;}
+  .dir-toggle{display:inline-flex; border:2px solid var(--indigo); border-radius:10px; overflow:hidden;}
+  .dir-toggle button{border:none; background:var(--card); color:var(--indigo); padding:8px 14px; font-weight:700; font-size:.85rem; cursor:pointer; font-family:inherit;}
+  .dir-toggle button.on{background:var(--gold); color:#3A2A05;}
+  .score-pill{background:var(--linen); border:1px solid #e0dccf; border-radius:999px; padding:6px 14px; font-size:.85rem; font-weight:700; color:var(--indigo-dark);}
+  .round-nav{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;}
+  .round-nav button{width:34px; height:34px; border-radius:50%; border:2px solid var(--indigo); background:#fff; color:var(--indigo); font-weight:700; cursor:pointer; font-family:inherit;}
+  .round-nav button.on{background:var(--indigo); color:#fff;}
+
+  .match-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 20px;}
+  .match-col{display:flex; flex-direction:column; gap:10px;}
+  .match-item{
+    border:2px solid #DAD5C6; background:#FCFBF8; border-radius:12px; padding:12px 14px;
+    cursor:pointer; text-align:left; font-family:inherit; color:var(--ink);
+    transition:.12s; line-height:1.4; font-size:.92rem;
+    display:flex; align-items:center; min-height:56px;
+  }
+  .match-item.word-card{font-weight:700; font-size:.98rem;}
+  .match-item:hover{border-color:var(--gold);}
+  .match-item.selected{border-color:var(--indigo); background:#EEF1F7;}
+  .match-item.correct{border-color:var(--good); background:#EAF4EC; color:var(--good); cursor:default;}
+  .match-item.wrong{border-color:var(--bad); animation:shake .3s;}
+  @keyframes shake{0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);}}
+
+  .word-bank{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; padding:14px; background:var(--linen); border-radius:12px;}
+  .chip{border:2px solid var(--indigo); background:#fff; color:var(--indigo); padding:7px 13px; border-radius:999px; font-size:.86rem; font-weight:700; cursor:pointer; font-family:inherit;}
+  .chip.used{opacity:.35; cursor:default;}
+  .chip.active-pick{background:var(--gold); border-color:var(--gold); color:#3A2A05;}
+
+  .fib-sentence{padding:12px 4px; border-bottom:1px dashed #DDD8C9; font-size:1rem; line-height:1.8;}
+  .fib-sentence:last-child{border-bottom:none;}
+  .blank{display:inline-block; min-width:90px; border-bottom:2px solid var(--indigo); text-align:center; font-weight:700; color:var(--indigo-dark); padding:0 4px; cursor:pointer;}
+  .blank.filled{color:var(--ink); background:#EEF1F7; border-radius:6px;}
+  .blank.correct{color:var(--good); border-bottom-color:var(--good); background:#EAF4EC; border-radius:6px;}
+  .blank.wrong{color:var(--bad); border-bottom-color:var(--bad); background:#FBEAE7; border-radius:6px;}
+
+  .actions{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  .btn{border:none; border-radius:10px; padding:11px 20px; font-weight:700; font-size:.9rem; cursor:pointer; font-family:inherit;}
+  .btn.primary{background:var(--indigo); color:#fff;}
+  .btn.ghost{background:#fff; border:2px solid var(--indigo); color:var(--indigo);}
+  .result-msg{margin-top:12px; font-weight:700; font-size:.92rem;}
+
+  @media (max-width:560px){
+    .match-grid{grid-template-columns:1fr;}
+    header h1{font-size:1.2rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>미래 핵심 역량 어휘 연습</h1>
+    <p>5급 중반 · 미래 교육 관련 어휘</p>
+    <div class="tag-line"></div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="match">① 단어-뜻 매칭</button>
+    <button class="tab-btn" data-tab="fib">② 빈칸 채우기</button>
+  </nav>
+
+  <section class="panel active" id="panel-match">
+    <div class="card">
+      <h2>단어와 뜻을 연결하세요</h2>
+      <div class="sub">카드를 하나씩 눌러서 짝을 맞춰 보세요. 방향을 바꿀 수 있어요.</div>
+      <div class="match-toolbar">
+        <div class="dir-toggle">
+          <button id="dirWordFirst" class="on">단어 → 뜻</button>
+          <button id="dirMeaningFirst">뜻 → 단어</button>
+        </div>
+        <div class="score-pill" id="matchScore">맞은 개수 0 / 0</div>
+      </div>
+      <div class="round-nav" id="roundNav"></div>
+      <div class="match-grid">
+        <div class="match-col" id="colLeft"></div>
+        <div class="match-col" id="colRight"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-fib">
+    <div class="card">
+      <h2>빈칸에 알맞은 표현을 넣으세요</h2>
+      <div class="sub">단어(표현)를 먼저 누르고, 넣을 빈칸을 누르세요.</div>
+      <div class="word-bank" id="bankFib"></div>
+      <div id="sentencesFib"></div>
+      <div class="actions">
+        <button class="btn primary" onclick="checkFib()">정답 확인</button>
+        <button class="btn ghost" onclick="resetFib()">다시 하기</button>
+      </div>
+      <div class="result-msg" id="resultFib"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const VOCAB = [
+  {w:"원격 수업", m:"한 장소에서 모여서 하는 수업이 아닌, 멀리 떨어져서 가르쳐 주는 수업"},
+  {w:"체험 학습", m:"교실 밖에서 직접 경험하며 이루어지는 학습"},
+  {w:"개인별 맞춤 학습", m:"학생 한 명 한 명의 수준이나 능력에 맞춰서 이루어지는 학습"},
+  {w:"학습자 중심 교육", m:"배우는 사람 위주로 하는 교육"},
+  {w:"관찰하다", m:"어떤 사물이나 현상을 자세히 살펴보다"},
+  {w:"병행하다", m:"둘 이상의 일을 한꺼번에 하다"},
+  {w:"협업하다", m:"여러 사람이 함께 모여서 협력하여 일하다"},
+  {w:"피드백을 받다", m:"자신이 한 일에 대해 다른 사람의 의견이나 반응을 듣다"},
+  {w:"인재를 양성하다", m:"어떤 일을 잘할 수 있는 유능한 사람으로 길러내다"},
+  {w:"환경을 조성하다", m:"어떤 일이 잘 이루어지도록 조건이나 분위기를 만들다"},
+  {w:"정보를 검색하다", m:"인터넷 등으로 필요한 정보를 찾다"},
+  {w:"다양성을 존중하다", m:"서로 다른 특성이나 생각을 인정하고 소중히 여기다"},
+  {w:"기술을 활용하다", m:"기술을 충분히 잘 이용하다"},
+  {w:"가상 현실을 체험하다", m:"실제 있는 것처럼 보이는 현실을 기기로 경험하다"},
+  {w:"디지털 기기를 사용하다", m:"문자나 영상 등을 디지털 신호로 처리하는 기계를 쓰다"},
+  {w:"첨단 기술을 도입하다", m:"최신 기술을 새로 들여와 적용하다"},
+];
+
+const ROUND_SIZE = 4;
+let wordFirst = true;
+let currentRound = 0;
+let selected = null;
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function totalRounds(){ return Math.ceil(VOCAB.length / ROUND_SIZE); }
+
+function buildRoundNav(){
+  const nav = document.getElementById("roundNav");
+  nav.innerHTML = "";
+  for(let i=0;i<totalRounds();i++){
+    const b = document.createElement("button");
+    b.textContent = i+1;
+    if(i===currentRound) b.classList.add("on");
+    b.onclick = () => { currentRound = i; renderMatch(); };
+    nav.appendChild(b);
+  }
+}
+
+function renderMatch(){
+  buildRoundNav();
+  selected = null;
+  const start = currentRound*ROUND_SIZE;
+  const items = VOCAB.slice(start, start+ROUND_SIZE);
+
+  const leftData = shuffle(items.map(it => ({key:it.w, text: wordFirst ? it.w : it.m})));
+  const rightData = shuffle(items.map(it => ({key:it.w, text: wordFirst ? it.m : it.w})));
+
+  const colLeft = document.getElementById("colLeft");
+  const colRight = document.getElementById("colRight");
+  colLeft.innerHTML = "";
+  colRight.innerHTML = "";
+
+  leftData.forEach(d => colLeft.appendChild(makeMatchButton(d, "left")));
+  rightData.forEach(d => colRight.appendChild(makeMatchButton(d, "right")));
+
+  updateScorePill(items.length);
+}
+
+function makeMatchButton(d, side){
+  const btn = document.createElement("button");
+  const isWord = (wordFirst && side==="left") || (!wordFirst && side==="right");
+  btn.className = "match-item" + (isWord ? " word-card" : "");
+  btn.textContent = d.text;
+  btn.dataset.key = d.key;
+  btn.dataset.side = side;
+  btn.onclick = () => onMatchClick(btn);
+  return btn;
+}
+
+function onMatchClick(btn){
+  if(btn.classList.contains("correct")) return;
+  if(!selected){
+    document.querySelectorAll(".match-item.selected").forEach(el=>el.classList.remove("selected"));
+    selected = btn; btn.classList.add("selected"); return;
+  }
+  if(selected === btn){ btn.classList.remove("selected"); selected = null; return; }
+  if(selected.dataset.side === btn.dataset.side){
+    selected.classList.remove("selected");
+    selected = btn; btn.classList.add("selected"); return;
+  }
+  if(selected.dataset.key === btn.dataset.key){
+    selected.classList.remove("selected");
+    selected.classList.add("correct");
+    btn.classList.add("correct");
+    const start = currentRound*ROUND_SIZE;
+    updateScorePill(VOCAB.slice(start, start+ROUND_SIZE).length);
+  } else {
+    [selected, btn].forEach(el=>{ el.classList.add("wrong"); setTimeout(()=>el.classList.remove("wrong"),300); });
+  }
+  selected.classList.remove("selected");
+  selected = null;
+}
+
+function updateScorePill(roundTotal){
+  const done = document.querySelectorAll("#colLeft .match-item.correct").length;
+  document.getElementById("matchScore").textContent = `맞은 개수 ${done} / ${roundTotal}`;
+}
+
+document.getElementById("dirWordFirst").onclick = () => {
+  wordFirst = true;
+  document.getElementById("dirWordFirst").classList.add("on");
+  document.getElementById("dirMeaningFirst").classList.remove("on");
+  renderMatch();
+};
+document.getElementById("dirMeaningFirst").onclick = () => {
+  wordFirst = false;
+  document.getElementById("dirMeaningFirst").classList.add("on");
+  document.getElementById("dirWordFirst").classList.remove("on");
+  renderMatch();
+};
+
+/* ---------------- FILL IN THE BLANK ---------------- */
+const FIB = {
+  bank: ["원격 수업","체험 학습","개인별 맞춤 학습","학습자 중심 교육","관찰해요","병행해요","협업해요","피드백을 받아요","인재를 양성해요","환경을 조성해요","정보를 검색해요","다양성을 존중해요","기술을 활용해요","가상 현실을 체험해요","디지털 기기를 사용해요","첨단 기술을 도입해요"],
+  sentences: [
+    {parts:[null, "이 늘어나면서 집에서도 수업을 들을 수 있게 되었어요."], ans:"원격 수업"},
+    {parts:[null, "은 교실 밖에서 직접 경험하면서 배우는 좋은 기회예요."], ans:"체험 학습"},
+    {parts:[null, "을 통해 학생 개개인의 수준에 맞는 내용을 배울 수 있어요."], ans:"개인별 맞춤 학습"},
+    {parts:["최근 교육은 ", null, "으로 많이 바뀌고 있어요."], ans:"학습자 중심 교육"},
+    {parts:["과학 시간에는 식물이 자라는 모습을 자세히 ", null, "."], ans:"관찰해요"},
+    {parts:["저는 요즘 회사 일과 대학원 공부를 ", null, "."], ans:"병행해요"},
+    {parts:["이번 프로젝트는 다른 팀과 ", null, "."], ans:"협업해요"},
+    {parts:["발표가 끝난 후에 선생님께 ", null, "."], ans:"피드백을 받아요"},
+    {parts:["이 대학은 미래 사회에 필요한 ", null, "."], ans:"인재를 양성해요"},
+    {parts:["학교에서는 학생들이 편하게 공부할 수 있는 ", null, "."], ans:"환경을 조성해요"},
+    {parts:["모르는 내용이 있으면 인터넷에서 ", null, "."], ans:"정보를 검색해요"},
+    {parts:["우리 반은 서로 다른 문화와 생각의 ", null, "."], ans:"다양성을 존중해요"},
+    {parts:["선생님은 수업 시간에 새로운 ", null, "."], ans:"기술을 활용해요"},
+    {parts:["이 수업에서는 역사 속 장소에 있는 것처럼 ", null, "."], ans:"가상 현실을 체험해요"},
+    {parts:["요즘 학생들은 수업 시간에 태블릿 같은 ", null, "."], ans:"디지털 기기를 사용해요"},
+    {parts:["우리 학교는 수업 방식을 바꾸기 위해 ", null, "."], ans:"첨단 기술을 도입해요"},
+  ]
+};
+
+let fibPicked = null;
+let fibFilled = {};
+
+function renderFib(){
+  const bankEl = document.getElementById("bankFib");
+  const sentEl = document.getElementById("sentencesFib");
+
+  bankEl.innerHTML = "";
+  shuffle(FIB.bank).forEach(word => {
+    const chip = document.createElement("button");
+    chip.className = "chip";
+    chip.textContent = word;
+    chip.dataset.word = word;
+    chip.onclick = () => pickChip(word, chip);
+    bankEl.appendChild(chip);
+  });
+
+  sentEl.innerHTML = "";
+  FIB.sentences.forEach((s, idx) => {
+    const row = document.createElement("div");
+    row.className = "fib-sentence";
+    s.parts.forEach(p => {
+      if(p === null){
+        const blank = document.createElement("span");
+        blank.className = "blank";
+        blank.dataset.idx = idx;
+        blank.textContent = "＿＿＿＿";
+        blank.onclick = () => fillBlank(idx, blank);
+        row.appendChild(blank);
+      } else {
+        row.appendChild(document.createTextNode(p));
+      }
+    });
+    sentEl.appendChild(row);
+  });
+
+  document.getElementById("resultFib").textContent = "";
+}
+
+function pickChip(word, chipEl){
+  if(chipEl.classList.contains("used")) return;
+  document.querySelectorAll("#bankFib .chip").forEach(c=>c.classList.remove("active-pick"));
+  fibPicked = {word, chipEl};
+  chipEl.classList.add("active-pick");
+}
+
+function fillBlank(idx, blankEl){
+  if(!fibPicked) return;
+  const prevWord = fibFilled[idx];
+  if(prevWord){
+    document.querySelectorAll("#bankFib .chip").forEach(c=>{
+      if(c.dataset.word === prevWord) c.classList.remove("used");
+    });
+  }
+  fibFilled[idx] = fibPicked.word;
+  blankEl.textContent = fibPicked.word;
+  blankEl.classList.add("filled");
+  blankEl.classList.remove("correct","wrong");
+  fibPicked.chipEl.classList.add("used");
+  fibPicked.chipEl.classList.remove("active-pick");
+  fibPicked = null;
+}
+
+function checkFib(){
+  let correct = 0;
+  FIB.sentences.forEach((s, idx) => {
+    const blankEl = document.querySelector(`#sentencesFib .blank[data-idx="${idx}"]`);
+    blankEl.classList.remove("correct","wrong");
+    if(fibFilled[idx] === s.ans){ blankEl.classList.add("correct"); correct++; }
+    else if(fibFilled[idx]){ blankEl.classList.add("wrong"); }
+  });
+  document.getElementById("resultFib").textContent = `${correct} / ${FIB.sentences.length} 개 맞았어요.`;
+}
+
+function resetFib(){ fibFilled = {}; fibPicked = null; renderFib(); }
+
+/* ---------------- TABS ---------------- */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+  };
+});
+
+/* ---------------- INIT ---------------- */
+renderMatch();
+renderFib();
+</script>
+</body>
+</html>
