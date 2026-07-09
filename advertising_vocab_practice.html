@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>광고와 경제 어휘 연습</title>
+<style>
+  :root{
+    --indigo:#2F3E5C;
+    --indigo-dark:#20293D;
+    --gold:#D9A441;
+    --linen:#F1EEE6;
+    --card:#FFFFFF;
+    --ink:#25293A;
+    --muted:#6B7080;
+    --good:#4C8B5B;
+    --bad:#C4574A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--linen);
+    font-family:'Noto Sans KR','Pretendard',system-ui,sans-serif;
+    color:var(--ink);
+    padding:24px 16px 60px;
+  }
+  .wrap{max-width:960px;margin:0 auto;}
+
+  header{
+    background:var(--indigo);
+    color:#fff;
+    border-radius:18px;
+    padding:28px 28px 22px;
+    position:relative;
+    overflow:hidden;
+    margin-bottom:24px;
+  }
+  header::before{
+    content:"";
+    position:absolute; top:18px; left:18px;
+    width:14px; height:14px; border-radius:50%;
+    background:var(--linen);
+    box-shadow: inset 0 0 0 3px var(--indigo-dark);
+  }
+  header h1{margin:0 0 6px 40px; font-size:1.5rem; letter-spacing:.02em;}
+  header p{margin:0 0 0 40px; color:#D8DCE8; font-size:.9rem;}
+  header .tag-line{margin-top:16px; height:0; border-top:2px dashed rgba(255,255,255,.35);}
+
+  nav.tabs{display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;}
+  nav.tabs button{
+    flex:1 1 auto; min-width:150px; padding:12px 10px;
+    border:2px solid var(--indigo); background:var(--card); color:var(--indigo);
+    border-radius:12px; font-weight:700; font-size:.88rem; cursor:pointer; font-family:inherit;
+  }
+  nav.tabs button.active{background:var(--indigo); color:#fff;}
+
+  section.panel{display:none;}
+  section.panel.active{display:block;}
+
+  .card{background:var(--card); border-radius:16px; padding:22px; margin-bottom:18px; box-shadow:0 1px 3px rgba(0,0,0,.06);}
+  .card h2{margin:0 0 4px; font-size:1.15rem; color:var(--indigo-dark);}
+  .card .sub{color:var(--muted); font-size:.88rem; margin-bottom:16px;}
+
+  .match-toolbar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;}
+  .dir-toggle{display:inline-flex; border:2px solid var(--indigo); border-radius:10px; overflow:hidden;}
+  .dir-toggle button{border:none; background:var(--card); color:var(--indigo); padding:8px 14px; font-weight:700; font-size:.85rem; cursor:pointer; font-family:inherit;}
+  .dir-toggle button.on{background:var(--gold); color:#3A2A05;}
+  .score-pill{background:var(--linen); border:1px solid #e0dccf; border-radius:999px; padding:6px 14px; font-size:.85rem; font-weight:700; color:var(--indigo-dark);}
+  .round-nav{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px;}
+  .round-nav button{width:34px; height:34px; border-radius:50%; border:2px solid var(--indigo); background:#fff; color:var(--indigo); font-weight:700; cursor:pointer; font-family:inherit;}
+  .round-nav button.on{background:var(--indigo); color:#fff;}
+
+  .match-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 20px;}
+  .match-col{display:flex; flex-direction:column; gap:10px;}
+  .match-item{
+    border:2px solid #DAD5C6; background:#FCFBF8; border-radius:12px; padding:12px 14px;
+    cursor:pointer; text-align:left; font-family:inherit; color:var(--ink);
+    transition:.12s; line-height:1.4; font-size:.92rem;
+    display:flex; align-items:center; min-height:56px;
+  }
+  .match-item.word-card{font-weight:700; font-size:.98rem;}
+  .match-item:hover{border-color:var(--gold);}
+  .match-item.selected{border-color:var(--indigo); background:#EEF1F7;}
+  .match-item.correct{border-color:var(--good); background:#EAF4EC; color:var(--good); cursor:default;}
+  .match-item.wrong{border-color:var(--bad); animation:shake .3s;}
+  @keyframes shake{0%,100%{transform:translateX(0);} 25%{transform:translateX(-4px);} 75%{transform:translateX(4px);}}
+
+  .word-bank{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:18px; padding:14px; background:var(--linen); border-radius:12px;}
+  .chip{border:2px solid var(--indigo); background:#fff; color:var(--indigo); padding:7px 13px; border-radius:999px; font-size:.86rem; font-weight:700; cursor:pointer; font-family:inherit;}
+  .chip.used{opacity:.35; cursor:default;}
+  .chip.active-pick{background:var(--gold); border-color:var(--gold); color:#3A2A05;}
+
+  .fib-sentence{padding:12px 4px; border-bottom:1px dashed #DDD8C9; font-size:1rem; line-height:1.8;}
+  .fib-sentence:last-child{border-bottom:none;}
+  .blank{display:inline-block; min-width:90px; border-bottom:2px solid var(--indigo); text-align:center; font-weight:700; color:var(--indigo-dark); padding:0 4px; cursor:pointer;}
+  .blank.filled{color:var(--ink); background:#EEF1F7; border-radius:6px;}
+  .blank.correct{color:var(--good); border-bottom-color:var(--good); background:#EAF4EC; border-radius:6px;}
+  .blank.wrong{color:var(--bad); border-bottom-color:var(--bad); background:#FBEAE7; border-radius:6px;}
+
+  .actions{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  .btn{border:none; border-radius:10px; padding:11px 20px; font-weight:700; font-size:.9rem; cursor:pointer; font-family:inherit;}
+  .btn.primary{background:var(--indigo); color:#fff;}
+  .btn.ghost{background:#fff; border:2px solid var(--indigo); color:var(--indigo);}
+  .result-msg{margin-top:12px; font-weight:700; font-size:.92rem;}
+
+  @media (max-width:560px){
+    .match-grid{grid-template-columns:1fr;}
+    header h1{font-size:1.2rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>광고와 경제 어휘 연습</h1>
+    <p>5급 중반 · 광고·소비 관련 어휘</p>
+    <div class="tag-line"></div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="match">① 단어-뜻 매칭</button>
+    <button class="tab-btn" data-tab="fib">② 빈칸 채우기</button>
+  </nav>
+
+  <section class="panel active" id="panel-match">
+    <div class="card">
+      <h2>단어와 뜻을 연결하세요</h2>
+      <div class="sub">카드를 하나씩 눌러서 짝을 맞춰 보세요. 방향을 바꿀 수 있어요.</div>
+      <div class="match-toolbar">
+        <div class="dir-toggle">
+          <button id="dirWordFirst" class="on">단어 → 뜻</button>
+          <button id="dirMeaningFirst">뜻 → 단어</button>
+        </div>
+        <div class="score-pill" id="matchScore">맞은 개수 0 / 0</div>
+      </div>
+      <div class="round-nav" id="roundNav"></div>
+      <div class="match-grid">
+        <div class="match-col" id="colLeft"></div>
+        <div class="match-col" id="colRight"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-fib">
+    <div class="card">
+      <h2>빈칸에 알맞은 표현을 넣으세요</h2>
+      <div class="sub">단어(표현)를 먼저 누르고, 넣을 빈칸을 누르세요.</div>
+      <div class="word-bank" id="bankFib"></div>
+      <div id="sentencesFib"></div>
+      <div class="actions">
+        <button class="btn primary" onclick="checkFib()">정답 확인</button>
+        <button class="btn ghost" onclick="resetFib()">다시 하기</button>
+      </div>
+      <div class="result-msg" id="resultFib"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+const VOCAB = [
+  {w:"대량으로 생산하다", m:"물건을 한꺼번에 많이 만들다"},
+  {w:"신제품을 홍보하다", m:"새로 나온 제품을 사람들에게 널리 알리다"},
+  {w:"제품을 구매하다", m:"물건을 돈을 주고 사다"},
+  {w:"매출이 증가하다", m:"물건을 팔아서 번 돈이 늘어나다"},
+  {w:"다른 기업과 경쟁하다", m:"다른 회사와 서로 이기려고 겨루다"},
+  {w:"규제하다", m:"어떤 행동을 하지 못하게 법이나 규칙으로 막다"},
+  {w:"비판을 받다", m:"잘못된 점에 대해 다른 사람에게 지적을 받다"},
+  {w:"정보를 제공하다", m:"필요한 내용을 알려 주다"},
+  {w:"제품을 노출하다", m:"사람들이 제품을 자주 보게 만들다"},
+  {w:"가격이 인상되다", m:"물건 값이 오르다"},
+  {w:"횟수를 제한하다", m:"어떤 일을 할 수 있는 수를 정해서 그 이상 못 하게 하다"},
+  {w:"구매를 유도하다", m:"사람들이 사고 싶은 마음이 들게 만들다"},
+  {w:"광고를 제작하다", m:"광고를 새로 만들다"},
+  {w:"제작비를 지원하다", m:"무언가를 만드는 데 필요한 돈을 도와주다"},
+  {w:"시청권을 침해하다", m:"방송을 볼 수 있는 권리를 방해하다"},
+  {w:"막대한 비용이 들다", m:"아주 많은 돈이 필요하다"},
+];
+
+const ROUND_SIZE = 4;
+let wordFirst = true;
+let currentRound = 0;
+let selected = null;
+
+function shuffle(arr){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function totalRounds(){ return Math.ceil(VOCAB.length / ROUND_SIZE); }
+
+function buildRoundNav(){
+  const nav = document.getElementById("roundNav");
+  nav.innerHTML = "";
+  for(let i=0;i<totalRounds();i++){
+    const b = document.createElement("button");
+    b.textContent = i+1;
+    if(i===currentRound) b.classList.add("on");
+    b.onclick = () => { currentRound = i; renderMatch(); };
+    nav.appendChild(b);
+  }
+}
+
+function renderMatch(){
+  buildRoundNav();
+  selected = null;
+  const start = currentRound*ROUND_SIZE;
+  const items = VOCAB.slice(start, start+ROUND_SIZE);
+
+  const leftData = shuffle(items.map(it => ({key:it.w, text: wordFirst ? it.w : it.m})));
+  const rightData = shuffle(items.map(it => ({key:it.w, text: wordFirst ? it.m : it.w})));
+
+  const colLeft = document.getElementById("colLeft");
+  const colRight = document.getElementById("colRight");
+  colLeft.innerHTML = "";
+  colRight.innerHTML = "";
+
+  leftData.forEach(d => colLeft.appendChild(makeMatchButton(d, "left")));
+  rightData.forEach(d => colRight.appendChild(makeMatchButton(d, "right")));
+
+  updateScorePill(items.length);
+}
+
+function makeMatchButton(d, side){
+  const btn = document.createElement("button");
+  const isWord = (wordFirst && side==="left") || (!wordFirst && side==="right");
+  btn.className = "match-item" + (isWord ? " word-card" : "");
+  btn.textContent = d.text;
+  btn.dataset.key = d.key;
+  btn.dataset.side = side;
+  btn.onclick = () => onMatchClick(btn);
+  return btn;
+}
+
+function onMatchClick(btn){
+  if(btn.classList.contains("correct")) return;
+  if(!selected){
+    document.querySelectorAll(".match-item.selected").forEach(el=>el.classList.remove("selected"));
+    selected = btn; btn.classList.add("selected"); return;
+  }
+  if(selected === btn){ btn.classList.remove("selected"); selected = null; return; }
+  if(selected.dataset.side === btn.dataset.side){
+    selected.classList.remove("selected");
+    selected = btn; btn.classList.add("selected"); return;
+  }
+  if(selected.dataset.key === btn.dataset.key){
+    selected.classList.remove("selected");
+    selected.classList.add("correct");
+    btn.classList.add("correct");
+    const start = currentRound*ROUND_SIZE;
+    updateScorePill(VOCAB.slice(start, start+ROUND_SIZE).length);
+  } else {
+    [selected, btn].forEach(el=>{ el.classList.add("wrong"); setTimeout(()=>el.classList.remove("wrong"),300); });
+  }
+  selected.classList.remove("selected");
+  selected = null;
+}
+
+function updateScorePill(roundTotal){
+  const done = document.querySelectorAll("#colLeft .match-item.correct").length;
+  document.getElementById("matchScore").textContent = `맞은 개수 ${done} / ${roundTotal}`;
+}
+
+document.getElementById("dirWordFirst").onclick = () => {
+  wordFirst = true;
+  document.getElementById("dirWordFirst").classList.add("on");
+  document.getElementById("dirMeaningFirst").classList.remove("on");
+  renderMatch();
+};
+document.getElementById("dirMeaningFirst").onclick = () => {
+  wordFirst = false;
+  document.getElementById("dirMeaningFirst").classList.add("on");
+  document.getElementById("dirWordFirst").classList.remove("on");
+  renderMatch();
+};
+
+/* ---------------- FILL IN THE BLANK ---------------- */
+const FIB = {
+  bank: ["대량으로 생산해요","신제품을 홍보해요","제품을 구매해요","매출이 증가해요","다른 기업과 경쟁해요","규제해요","비판을 받아요","정보를 제공해요","제품을 노출해요","가격이 인상돼요","횟수를 제한해요","구매를 유도해요","광고를 제작해요","제작비를 지원해요","시청권을 침해해요","막대한 비용이 들어요"],
+  sentences: [
+    {parts:["이 공장은 신발을 ", null, "."], ans:"대량으로 생산해요"},
+    {parts:["회사는 새 화장품을 사람들에게 알리려고 ", null, "."], ans:"신제품을 홍보해요"},
+    {parts:["저는 필요한 물건이 있으면 온라인에서 ", null, "."], ans:"제품을 구매해요"},
+    {parts:["광고를 한 후에 ", null, "."], ans:"매출이 증가해요"},
+    {parts:["이 회사는 살아남기 위해 ", null, "."], ans:"다른 기업과 경쟁해요"},
+    {parts:["정부는 어린이 대상 광고를 ", null, "."], ans:"규제해요"},
+    {parts:["그 광고는 과장된 내용 때문에 ", null, "."], ans:"비판을 받아요"},
+    {parts:["이 광고는 소비자에게 정확한 ", null, "."], ans:"정보를 제공해요"},
+    {parts:["요즘 유튜브 영상 속에서 자연스럽게 ", null, "."], ans:"제품을 노출해요"},
+    {parts:["원재료 값이 올라서 ", null, "."], ans:"가격이 인상돼요"},
+    {parts:["어린이 프로그램에서는 광고 ", null, "."], ans:"횟수를 제한해요"},
+    {parts:["할인 이벤트는 소비자의 ", null, "."], ans:"구매를 유도해요"},
+    {parts:["이 회사는 이번에 새로운 ", null, "."], ans:"광고를 제작해요"},
+    {parts:["방송사는 프로그램의 ", null, "."], ans:"제작비를 지원해요"},
+    {parts:["너무 많은 광고는 시청자의 ", null, "."], ans:"시청권을 침해해요"},
+    {parts:["새로운 광고를 만드는 데 ", null, "."], ans:"막대한 비용이 들어요"},
+  ]
+};
+
+let fibPicked = null;
+let fibFilled = {};
+
+function renderFib(){
+  const bankEl = document.getElementById("bankFib");
+  const sentEl = document.getElementById("sentencesFib");
+
+  bankEl.innerHTML = "";
+  shuffle(FIB.bank).forEach(word => {
+    const chip = document.createElement("button");
+    chip.className = "chip";
+    chip.textContent = word;
+    chip.dataset.word = word;
+    chip.onclick = () => pickChip(word, chip);
+    bankEl.appendChild(chip);
+  });
+
+  sentEl.innerHTML = "";
+  FIB.sentences.forEach((s, idx) => {
+    const row = document.createElement("div");
+    row.className = "fib-sentence";
+    s.parts.forEach(p => {
+      if(p === null){
+        const blank = document.createElement("span");
+        blank.className = "blank";
+        blank.dataset.idx = idx;
+        blank.textContent = "＿＿＿＿";
+        blank.onclick = () => fillBlank(idx, blank);
+        row.appendChild(blank);
+      } else {
+        row.appendChild(document.createTextNode(p));
+      }
+    });
+    sentEl.appendChild(row);
+  });
+
+  document.getElementById("resultFib").textContent = "";
+}
+
+function pickChip(word, chipEl){
+  if(chipEl.classList.contains("used")) return;
+  document.querySelectorAll("#bankFib .chip").forEach(c=>c.classList.remove("active-pick"));
+  fibPicked = {word, chipEl};
+  chipEl.classList.add("active-pick");
+}
+
+function fillBlank(idx, blankEl){
+  if(!fibPicked) return;
+  const prevWord = fibFilled[idx];
+  if(prevWord){
+    document.querySelectorAll("#bankFib .chip").forEach(c=>{
+      if(c.dataset.word === prevWord) c.classList.remove("used");
+    });
+  }
+  fibFilled[idx] = fibPicked.word;
+  blankEl.textContent = fibPicked.word;
+  blankEl.classList.add("filled");
+  blankEl.classList.remove("correct","wrong");
+  fibPicked.chipEl.classList.add("used");
+  fibPicked.chipEl.classList.remove("active-pick");
+  fibPicked = null;
+}
+
+function checkFib(){
+  let correct = 0;
+  FIB.sentences.forEach((s, idx) => {
+    const blankEl = document.querySelector(`#sentencesFib .blank[data-idx="${idx}"]`);
+    blankEl.classList.remove("correct","wrong");
+    if(fibFilled[idx] === s.ans){ blankEl.classList.add("correct"); correct++; }
+    else if(fibFilled[idx]){ blankEl.classList.add("wrong"); }
+  });
+  document.getElementById("resultFib").textContent = `${correct} / ${FIB.sentences.length} 개 맞았어요.`;
+}
+
+function resetFib(){ fibFilled = {}; fibPicked = null; renderFib(); }
+
+/* ---------------- TABS ---------------- */
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+  };
+});
+
+/* ---------------- INIT ---------------- */
+renderMatch();
+renderFib();
+</script>
+</body>
+</html>
